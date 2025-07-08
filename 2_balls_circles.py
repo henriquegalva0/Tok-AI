@@ -2,6 +2,8 @@ import pygame
 import math
 import sys
 import random
+from pyvidplayer import Video
+from config import nome_do_video
 
 def random_color():
     return (random.randint(80, 255), random.randint(80, 255), random.randint(80, 255))
@@ -15,9 +17,14 @@ def random_width():
 # Inicialização do Pygame
 pygame.init()
 
+vid = Video(f"{nome_do_video}.mp4")
+vid.set_size((480, 270))
+vid.set_volume(0.5)
+vid.seek(270)
+
 # ==================== CONFIGURAÇÕES DA JANELA ====================
-LARGURA = 600  # Largura da janela
-ALTURA = 600    # Altura da janela
+LARGURA = 480  # Largura da janela
+ALTURA = 854    # Altura da janela
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Efeito Interativo de Bolas - Contornos Móveis e Coloridos")
 
@@ -255,7 +262,7 @@ class Contorno:
         
         # Sistema de movimento
         self.centro_alvo_x = LARGURA // 2
-        self.centro_alvo_y = ALTURA // 2
+        self.centro_alvo_y = (ALTURA // 2) * 1.3
         self.vx = 0  # Velocidade horizontal
         self.vy = 0  # Velocidade vertical
         self.velocidade_atual = VELOCIDADE_INICIAL_CONTORNO
@@ -347,7 +354,7 @@ class GeradorContornos:
         
         # Centro da tela para spawn dos contornos
         self.centro_x = LARGURA // 2
-        self.centro_y = ALTURA // 2
+        self.centro_y = (ALTURA // 2) * 1.3
     
     def atualizar(self, contornos):
         """
@@ -479,15 +486,20 @@ def main():
         bola_azul.desenhar(TELA)
         
         # Atualiza a tela
-        pygame.display.flip()
+        vid.draw(TELA, (0, 0))
+        pygame.display.update()
         
         # Controla FPS
+        if vid.draw(TELA, (0, 0)) == False:
+            return 'Fim'
         clock.tick(60)
     
     # Finaliza o Pygame
     pygame.quit()
     print("Aplicativo finalizado!")
     sys.exit()
+
+pygame.display.flip()
 
 # ==================== EXECUÇÃO DO PROGRAMA ====================
 if __name__ == "__main__":

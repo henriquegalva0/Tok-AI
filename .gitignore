@@ -141,3 +141,8 @@ Thumbs.db
 # Game specific
 *.save
 *.sav 
+
+# API
+api_assembly
+api_assembly/
+api_assembly.json

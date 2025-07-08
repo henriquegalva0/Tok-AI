@@ -2,6 +2,8 @@ import pygame
 import math
 import sys
 import random
+from pyvidplayer import Video
+from config import nome_do_video
 
 def random_color():
     return (random.randint(80, 255), random.randint(80, 255), random.randint(80, 255))
@@ -9,12 +11,17 @@ def random_color():
 def random_confirm():
     return random.choice([True, False])
 
+vid = Video(f"{nome_do_video}.mp4")
+vid.set_size((480, 270))
+vid.set_volume(0.5)
+vid.seek(270)
+
 # Inicialização do Pygame
 pygame.init()
 
 # ==================== CONFIGURAÇÕES DA JANELA ====================
-LARGURA = 600  # Largura da janela
-ALTURA = 600    # Altura da janela
+LARGURA = 480  # Largura da janela
+ALTURA = 854    # Altura da janela
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Efeito Interativo de Bolas - Sistema de Cores")
 
@@ -55,13 +62,13 @@ COR_FUNDO = (0, 0, 0)        # Preto - cor do fundo
 
 # ==================== CONFIGURAÇÕES DAS BOLAS (CONFIGURÁVEIS) ====================
 RAIO_BOLA = 15             # Raio R das bolas (tamanho médio para pequeno)
-GRAVIDADE = 0.5             # Força da gravidade aplicada às bolas
-FORCA_QUIQUE = 1.3          # Força do quique (0.0 a 1.0) - quanto maior, mais energia mantém
+GRAVIDADE = 0.7             # Força da gravidade aplicada às bolas
+FORCA_QUIQUE = 1.6          # Força do quique (0.0 a 1.0) - quanto maior, mais energia mantém
 ACELERACAO_QUIQUE = 1.2     # Multiplicador de aceleração após cada quique
 VELOCIDADE_MAXIMA = 15      # Velocidade máxima que as bolas podem atingir
 
 # ==================== CONFIGURAÇÕES DOS CONTORNOS (CONFIGURÁVEIS) ====================
-QUANTIDADE_CONTORNOS_SIMULTANEOS = 12  # Quantidade de contornos simultâneos na tela
+QUANTIDADE_CONTORNOS_SIMULTANEOS = 30  # Quantidade de contornos simultâneos na tela
 RAIO_MINIMO_CONTORNO = RAIO_BOLA * 5   # Tamanho mínimo = 5R
 RAIO_MAXIMO_INICIAL = 300              # Raio máximo inicial dos contornos
 VELOCIDADE_DIMINUICAO = 8            # Velocidade que os contornos diminuem de tamanho
@@ -245,7 +252,7 @@ class GeradorContornos:
         self.contador_frames = 0
         self.proximo_raio = RAIO_MAXIMO_INICIAL
         self.centro_x = LARGURA // 2
-        self.centro_y = ALTURA // 2
+        self.centro_y = (ALTURA // 2) * 1.3
         self.indice_cor_lista = 0  # Para alternar cores quando usando lista
     
     def _obter_cor_contorno(self):
@@ -320,7 +327,7 @@ def main():
     gerador = GeradorContornos()
     
     # Calcula o centro da tela para posicionar a bola
-    centro_x = LARGURA // 2
+    centro_x = LARGURA // 2 + 30
     centro_y = ALTURA // 2
     
     # Cria UMA ÚNICA bola no centro da tela
@@ -398,10 +405,10 @@ def main():
         bola.desenhar(TELA)
 
         # Atualiza a tela
-        pygame.display.flip()
-        
-        # Controla FPS
-        clock.tick(43)
+        if vid.draw(TELA, (0, 0)) == False:
+            return 'Fim'
+        pygame.display.update()
+        clock.tick(60)
     
     # Finaliza o Pygame
     pygame.quit()

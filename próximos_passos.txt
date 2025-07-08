@@ -1,5 +1,0 @@
-Talvez adicionar mais um marble game
-
-Aprender a adicionar vídeos no pygame para colocar na janela direto
-
-Criar banco de dados com vídeos de family guy
