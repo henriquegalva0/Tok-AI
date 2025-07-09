@@ -2,19 +2,17 @@ import pygame
 import math
 import sys
 import random
-from pyvidplayer import Video
-from config import nome_do_video
+import os
+import time
+
+finalizar_gravacao = False
+game_start_time = None
 
 def random_color():
     return (random.randint(80, 255), random.randint(80, 255), random.randint(80, 255))
 
 def random_confirm():
     return random.choice([True, False])
-
-vid = Video(f"{nome_do_video}.mp4")
-vid.set_size((480, 270))
-vid.set_volume(0.5)
-vid.seek(270)
 
 # Inicialização do Pygame
 pygame.init()
@@ -75,8 +73,8 @@ VELOCIDADE_DIMINUICAO = 8            # Velocidade que os contornos diminuem de t
 ESPESSURA_CONTORNO = 6               # Espessura da linha do contorno
 INTERVALO_CRIACAO = 2                # Intervalo em frames para criar novos contornos
 
-# ==================== CONFIGURAÇÕES DE MOVIMENTO DOS CONTORNOS ====================
-# REMOVIDO: Todas as variáveis de movimento
+# ==================== TIMER CONFIGURATION ====================
+GAME_DURATION = 30  # 30 seconds
 
 class Bola:
     """Classe que representa uma bola no jogo"""
@@ -209,7 +207,6 @@ class Contorno:
         self.alpha = 255
         self.destruido = False
         self.cor = cor
-        # REMOVIDO: Sistema de movimento
     
     def atualizar(self):
         """Atualiza o contorno (diminuição de tamanho apenas)"""
@@ -300,8 +297,6 @@ class GeradorContornos:
                 
                 # Reseta o contador
                 self.contador_frames = 0
-                
-                print(f"Novo contorno criado! Cor: {cor_contorno}, Raio: {self.proximo_raio - 40}")
 
 def obter_cor_bola():
     """
@@ -315,8 +310,29 @@ def obter_cor_bola():
         # Cor específica
         return COR_BOLA
 
+def check_timer():
+    """Verifica se o timer de 30 segundos terminou"""
+    global game_start_time, finalizar_gravacao
+    if game_start_time is None:
+        return False
+    
+    elapsed_time = time.time() - game_start_time
+    seconds_passed = int(elapsed_time)
+    print(f"Tempo decorrido: {seconds_passed} segundos")
+    
+    if elapsed_time >= GAME_DURATION:
+        finalizar_gravacao = True
+        return True
+    return False
+
 def main():
     """Função principal do jogo"""
+    global game_start_time, finalizar_gravacao
+    
+    # Inicializa o timer
+    game_start_time = time.time()
+    print("Jogo iniciado! Timer de 30 segundos começou.")
+    
     # Inicializa o relógio para controlar FPS
     clock = pygame.time.Clock()
     
@@ -356,6 +372,12 @@ def main():
     # Loop principal do jogo
     rodando = True
     while rodando:
+        # Verifica o timer
+        if check_timer():
+            print("Tempo esgotado! Finalizando jogo...")
+            rodando = False
+            break
+        
         # Processa eventos
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -367,7 +389,6 @@ def main():
                     # Tecla ESPAÇO: muda cor da bola (se randomização estiver ativa)
                     if RANDOMIZAR_COR_BOLA:
                         bola.cor = obter_cor_bola()
-                        print(f"Nova cor da bola: {bola.cor}")
         
         # Atualiza o gerador de contornos
         gerador.atualizar(contornos)
@@ -384,7 +405,6 @@ def main():
             if contorno.ativo and not contorno.destruido and bola.colisao_com_contorno(contorno):
                 contorno.destruir()
                 contornos_destruidos += 1
-                print(f"Contorno destruído! Total: {contornos_destruidos}")
             
             # Mantém contornos que ainda estão ativos
             if contorno.ativo:
@@ -405,14 +425,13 @@ def main():
         bola.desenhar(TELA)
 
         # Atualiza a tela
-        if vid.draw(TELA, (0, 0)) == False:
-            return 'Fim'
         pygame.display.update()
         clock.tick(60)
     
     # Finaliza o Pygame
     pygame.quit()
     print(f"Aplicativo finalizado! Contornos destruídos: {contornos_destruidos}")
+    finalizar_gravacao = True
     sys.exit()
 
 # ==================== EXECUÇÃO DO PROGRAMA ====================

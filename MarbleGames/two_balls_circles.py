@@ -2,8 +2,12 @@ import pygame
 import math
 import sys
 import random
-from pyvidplayer import Video
-from config import nome_do_video
+import os
+import time
+from types import DynamicClassAttribute
+
+finalizar_gravacao = False
+game_start_time = None
 
 def random_color():
     return (random.randint(80, 255), random.randint(80, 255), random.randint(80, 255))
@@ -16,11 +20,6 @@ def random_width():
 
 # Inicialização do Pygame
 pygame.init()
-
-vid = Video(f"{nome_do_video}.mp4")
-vid.set_size((480, 270))
-vid.set_volume(0.5)
-vid.seek(270)
 
 # ==================== CONFIGURAÇÕES DA JANELA ====================
 LARGURA = 480  # Largura da janela
@@ -56,6 +55,9 @@ VELOCIDADE_INICIAL_CONTORNO = 10     # Velocidade inicial dos contornos em dire�
 ACELERACAO_CONTORNO = 3             # Aceleração inicial dos contornos
 DESACELERACAO_CONTORNO = 0.12          # Fator de desaceleração (multiplicador < 1)
 DISTANCIA_DESACELERACAO = 100          # Distância do centro onde começa a desaceleração
+
+# ==================== TIMER CONFIGURATION ====================
+GAME_DURATION = 30  # 30 seconds
 
 class Bola:
     """Classe que representa uma bola no jogo"""
@@ -217,7 +219,6 @@ class Bola:
                     return True  # Pode destruir
                 else:
                     # Apenas quica, não destrói
-                    print(f"Bola {self.tipo} quicou no contorno {contorno.tipo} (cores incompatíveis)")
                     return False
         
         return False  # Não houve colisão
@@ -385,17 +386,36 @@ class GeradorContornos:
                 
                 # Reseta o contador
                 self.contador_frames = 0
-                
-                print(f"Novo contorno {tipo_cor} criado no centro! Raio: {self.proximo_raio - 25}")
+
+def check_timer():
+    """Verifica se o timer de 30 segundos terminou"""
+    global game_start_time, finalizar_gravacao
+    if game_start_time is None:
+        return False
+    
+    elapsed_time = time.time() - game_start_time
+    seconds_passed = int(elapsed_time)
+    print(f"Tempo decorrido: {seconds_passed} segundos")
+    
+    if elapsed_time >= GAME_DURATION:
+        finalizar_gravacao = True
+        return True
+    return False
 
 def main():
     """Função principal do jogo"""
+    global game_start_time, finalizar_gravacao
+    
+    # Inicializa o timer
+    game_start_time = time.time()
+    print("Jogo iniciado! Timer de 30 segundos começou.")
+    
     # Inicializa o relógio para controlar FPS
     clock = pygame.time.Clock()
     
     # Inicializa lista de contornos vazia
     contornos = []
-    
+
     # Cria o gerador de contornos infinitos
     gerador = GeradorContornos()
     
@@ -423,6 +443,12 @@ def main():
     # Loop principal do jogo
     rodando = True
     while rodando:
+        # Verifica o timer
+        if check_timer():
+            print("Tempo esgotado! Finalizando jogo...")
+            rodando = False
+            break
+        
         # Processa eventos
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -452,7 +478,6 @@ def main():
                     if bola_vermelha.pode_destruir_contorno(contorno):
                         contorno.destruir()
                         contornos_destruidos_total += 1
-                        print(f"Bola vermelha destruiu contorno {contorno.tipo}! Total: {contornos_destruidos_total}")
                     else:
                         quiques_incompativeis += 1
             
@@ -462,7 +487,6 @@ def main():
                     if bola_azul.pode_destruir_contorno(contorno):
                         contorno.destruir()
                         contornos_destruidos_total += 1
-                        print(f"Bola azul destruiu contorno {contorno.tipo}! Total: {contornos_destruidos_total}")
                     else:
                         quiques_incompativeis += 1
             
@@ -486,17 +510,15 @@ def main():
         bola_azul.desenhar(TELA)
         
         # Atualiza a tela
-        vid.draw(TELA, (0, 0))
         pygame.display.update()
-        
+
         # Controla FPS
-        if vid.draw(TELA, (0, 0)) == False:
-            return 'Fim'
         clock.tick(60)
     
     # Finaliza o Pygame
     pygame.quit()
     print("Aplicativo finalizado!")
+    finalizar_gravacao = True
     sys.exit()
 
 pygame.display.flip()

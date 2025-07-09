@@ -143,6 +143,5 @@ Thumbs.db
 *.sav 
 
 # API
-api_assembly
-api_assembly/
-api_assembly.json
+VideoSubtitles/
+VideoSubtitles
