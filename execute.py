@@ -180,3 +180,12 @@ finally:
     
     print(f"Gravação finalizada. Arquivo salvo como: {filename}")
     print(f"Total de frames gravados: {frame_count}")
+
+if script_escolhido == "MarbleGames/two_balls_circles.py":
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), "VideoEditing/unified_treatment.py")])
+
+elif script_escolhido == "MarbleGames/ball_circles.py":
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), "VideoEditing/unified_treatment.py")])
+
+elif script_escolhido == "MarbleGames/img_coliseum.py":
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), "VideoEditing/merge_audio.py")])

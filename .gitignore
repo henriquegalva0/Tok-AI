@@ -143,5 +143,8 @@ Thumbs.db
 *.sav 
 
 # API
-VideoSubtitles/
-VideoSubtitles
+api_assembly.json
+
+# Misc
+musica_aleatoria.mp3
+input.mp4
